@@ -1,0 +1,22 @@
+20
+locate
+add 5
+locate
+action
+locate
+add 3
+add 7
+action
+locate
+action
+locate
+action
+locate
+add 10
+action
+locate
+action
+locate
+cancel 10
+action
+locate
