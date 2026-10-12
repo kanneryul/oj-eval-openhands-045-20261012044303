@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 
-const int MAX_REQUESTS = 500000;
+const int MAX_REQUESTS = 500005; // Extra space for safety
 
 struct ElevatorSystem {
     int currentFloor;
