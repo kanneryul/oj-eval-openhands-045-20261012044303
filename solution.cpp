@@ -8,7 +8,7 @@ struct ElevatorSystem {
     int currentFloor;
     int direction; // 1 for up, -1 for down
     
-    // Pending requests stored in sorted array
+    // Pending requests
     int requests[MAX_REQUESTS];
     int requestCount;
     
@@ -18,56 +18,20 @@ struct ElevatorSystem {
         requestCount = 0;
     }
     
-    // Binary search to find insertion position
-    int findInsertPosition(int x) {
-        int left = 0, right = requestCount;
-        while (left < right) {
-            int mid = (left + right) / 2;
-            if (requests[mid] < x) {
-                left = mid + 1;
-            } else {
-                right = mid;
-            }
-        }
-        return left;
-    }
-    
-    // Binary search to find element
-    int findElement(int x) {
-        int left = 0, right = requestCount - 1;
-        while (left <= right) {
-            int mid = (left + right) / 2;
-            if (requests[mid] == x) {
-                return mid;
-            } else if (requests[mid] < x) {
-                left = mid + 1;
-            } else {
-                right = mid - 1;
-            }
-        }
-        return -1;
-    }
-    
     void addRequest(int x) {
-        int pos = findInsertPosition(x);
-        
-        // Shift elements to make space
-        for (int i = requestCount; i > pos; i--) {
-            requests[i] = requests[i - 1];
-        }
-        
-        requests[pos] = x;
-        requestCount++;
+        requests[requestCount++] = x;
     }
     
     void cancelRequest(int x) {
-        int pos = findElement(x);
-        if (pos != -1) {
-            // Shift elements to remove
-            for (int i = pos; i < requestCount - 1; i++) {
-                requests[i] = requests[i + 1];
+        for (int i = 0; i < requestCount; i++) {
+            if (requests[i] == x) {
+                // Shift elements to remove
+                for (int j = i; j < requestCount - 1; j++) {
+                    requests[j] = requests[j + 1];
+                }
+                requestCount--;
+                break;
             }
-            requestCount--;
         }
     }
     
@@ -78,42 +42,25 @@ struct ElevatorSystem {
         }
         
         int target = -1;
+        int minDistance = 1000000000; // Large number
         
-        if (direction == 1) {
-            // Going up - find smallest floor >= currentFloor
-            int left = 0, right = requestCount - 1;
-            int result = -1;
+        // Find nearest request in current direction
+        for (int i = 0; i < requestCount; i++) {
+            int floor = requests[i];
+            int distance = floor - currentFloor;
             
-            while (left <= right) {
-                int mid = (left + right) / 2;
-                if (requests[mid] >= currentFloor) {
-                    result = mid;
-                    right = mid - 1;
-                } else {
-                    left = mid + 1;
+            if (direction == 1) {
+                // Going up - look for floors >= currentFloor
+                if (distance >= 0 && distance < minDistance) {
+                    minDistance = distance;
+                    target = floor;
                 }
-            }
-            
-            if (result != -1) {
-                target = requests[result];
-            }
-        } else {
-            // Going down - find largest floor <= currentFloor
-            int left = 0, right = requestCount - 1;
-            int result = -1;
-            
-            while (left <= right) {
-                int mid = (left + right) / 2;
-                if (requests[mid] <= currentFloor) {
-                    result = mid;
-                    left = mid + 1;
-                } else {
-                    right = mid - 1;
+            } else {
+                // Going down - look for floors <= currentFloor
+                if (distance <= 0 && -distance < minDistance) {
+                    minDistance = -distance;
+                    target = floor;
                 }
-            }
-            
-            if (result != -1) {
-                target = requests[result];
             }
         }
         
@@ -126,41 +73,25 @@ struct ElevatorSystem {
             direction = -direction;
             
             // Find nearest request in new direction
-            if (direction == 1) {
-                // Now going up
-                int left = 0, right = requestCount - 1;
-                int result = -1;
+            minDistance = 1000000000;
+            target = -1;
+            
+            for (int i = 0; i < requestCount; i++) {
+                int floor = requests[i];
+                int distance = floor - currentFloor;
                 
-                while (left <= right) {
-                    int mid = (left + right) / 2;
-                    if (requests[mid] >= currentFloor) {
-                        result = mid;
-                        right = mid - 1;
-                    } else {
-                        left = mid + 1;
+                if (direction == 1) {
+                    // Now going up
+                    if (distance >= 0 && distance < minDistance) {
+                        minDistance = distance;
+                        target = floor;
                     }
-                }
-                
-                if (result != -1) {
-                    target = requests[result];
-                }
-            } else {
-                // Now going down
-                int left = 0, right = requestCount - 1;
-                int result = -1;
-                
-                while (left <= right) {
-                    int mid = (left + right) / 2;
-                    if (requests[mid] <= currentFloor) {
-                        result = mid;
-                        left = mid + 1;
-                    } else {
-                        right = mid - 1;
+                } else {
+                    // Now going down
+                    if (distance <= 0 && -distance < minDistance) {
+                        minDistance = -distance;
+                        target = floor;
                     }
-                }
-                
-                if (result != -1) {
-                    target = requests[result];
                 }
             }
             
